@@ -19,9 +19,11 @@ This plugin provide the ability to stream motion data from Axis Studio/Axis Neur
 
 ## <div id="id_installation">Installation</div>
 
-1. Download plugin package from Github release page
+1. Download plugin package from Github [release page](https://github.com/pnmocap/neuron_mocap_live-c4d/releases)
 2. Unzip the plugin package to C4D plugins folder ( which can be located by click *Open Preferences Folder* button on C4D preferences dialog )
 3. Restart C4D
+
+![](resource/c4d_plugin_install.gif)
 
 ## <div id="id_quick_start_guide">Quick start guide</div>
 
