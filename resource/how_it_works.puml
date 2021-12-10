@@ -1,0 +1,29 @@
+@startuml
+
+left to right direction
+
+rectangle "Axis Studio" as axis_studio 
+
+rectangle C4D {
+
+    rectangle Connection 
+
+    rectangle "Model n" as Model3
+    rectangle "Neuron Mocap Live Tag n" as Tag3
+
+    rectangle "Model 2" as Model2
+    rectangle "Neuron Mocap Live Tag 2" as Tag2
+
+    rectangle "Model 1" as Model1
+    rectangle "Neuron Mocap Live Tag 1" as Tag1
+}
+
+axis_studio -- Connection :> BVH
+Connection -- Tag1 :> BVH
+Tag1 -- Model1 :> Drive
+Connection -- Tag2 :> BVH
+Tag2 -- Model2 :> Drive
+Connection -- Tag3 :> BVH
+Tag3 -- Model3 :> Drive
+
+@enduml
