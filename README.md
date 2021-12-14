@@ -23,7 +23,7 @@ This plugin provide the ability to stream motion data from Axis Studio/Axis Neur
 2. Unzip the plugin package to C4D plugins folder ( which can be located by click *Open Preferences Folder* button on C4D preferences dialog )
 3. Restart C4D
 
-![](resource/c4d_plugin_install.gif)
+   ![](resource/c4d_plugin_install.gif)
 
 ## <div id="id_quick_start_guide">Quick start guide</div>
 

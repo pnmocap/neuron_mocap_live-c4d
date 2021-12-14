@@ -100,16 +100,14 @@ class NeuronTagData(c4d.plugins.TagData):
          bc.SetBool(c4d.DESC_DEFAULT, True)
          description.SetParameter(desc_id, bc, c4d.ID_TAGPROPERTIES)
 
-      idx = 0
-      midx = 0
-      for joint in NEURON_JOINTS:
-         mg = node.GetDataInstance().GetData(ID_TAG_T_POSE_MATRIX + midx)
-         midx += 3
+      for idx in range(len(NEURON_JOINTS)):
+         mg = node.GetDataInstance().GetData(ID_TAG_T_POSE_MATRIX + idx*3)
 
-         desc_id = c4d.DescID(c4d.DescLevel(ID_TAG_CHARACTER_JOINTS + idx, c4d.DTYPE_BASELISTLINK, node.GetType()))
+         joint = NEURON_JOINTS[idx]
+         desc_id = c4d.DescID(c4d.DescLevel(ID_TAG_CHARACTER_JOINTS + idx*3, c4d.DTYPE_BASELISTLINK, node.GetType()))
          if singleID is None or desc_id.IsPartOf(singleID):
             bc = c4d.GetCustomDataTypeDefault(c4d.DTYPE_BASELISTLINK)
-            if mg is not None:
+            if mg:
                bc.SetString(c4d.DESC_NAME, "{0} T".format(joint))
                bc.SetString(c4d.DESC_SHORT_NAME, "{0} T".format(joint))
             else:
@@ -118,8 +116,8 @@ class NeuronTagData(c4d.plugins.TagData):
             bc.SetInt32(c4d.DESC_ANIMATE, c4d.DESC_ANIMATE_OFF)
             bc.SetBool(c4d.DESC_FORBID_INLINE_FOLDING, True)
             description.SetParameter(desc_id, bc, ID_TAG_JOINTS_GROUP)
-         idx += 1
-         desc_id = c4d.DescID(c4d.DescLevel(ID_TAG_CHARACTER_JOINTS + idx, c4d.DTYPE_BOOL, node.GetType()))
+
+         desc_id = c4d.DescID(c4d.DescLevel(ID_TAG_CHARACTER_JOINTS + idx*3 + 1, c4d.DTYPE_BOOL, node.GetType()))
          if singleID is None or desc_id.IsPartOf(singleID):
             bc = c4d.GetCustomDataTypeDefault(c4d.DTYPE_BOOL)
             bc.SetString(c4d.DESC_NAME, "R")
@@ -127,19 +125,49 @@ class NeuronTagData(c4d.plugins.TagData):
             bc.SetInt32(c4d.DESC_ANIMATE, c4d.DESC_ANIMATE_OFF)
             bc.SetBool(c4d.DESC_DEFAULT, True)
             description.SetParameter(desc_id, bc, ID_TAG_JOINTS_GROUP)
-         idx += 1
-         desc_id = c4d.DescID(c4d.DescLevel(ID_TAG_CHARACTER_JOINTS + idx, c4d.DTYPE_BOOL, node.GetType()))
+
+         desc_id = c4d.DescID(c4d.DescLevel(ID_TAG_CHARACTER_JOINTS + idx*3 + 2, c4d.DTYPE_BOOL, node.GetType()))
          if singleID is None or desc_id.IsPartOf(singleID):
             bc = c4d.GetCustomDataTypeDefault(c4d.DTYPE_BOOL)
             bc.SetString(c4d.DESC_NAME, "P")
             bc.SetString(c4d.DESC_SHORT_NAME, "P")
             bc.SetInt32(c4d.DESC_ANIMATE, c4d.DESC_ANIMATE_OFF)
             description.SetParameter(desc_id, bc, ID_TAG_JOINTS_GROUP)
-         idx += 1
+
+         desc_id = c4d.DescID(c4d.DescLevel(ID_TAG_CHARACTER_JOINTS_NAME + idx, c4d.DTYPE_STRING, node.GetType()))
+         if singleID is None or desc_id.IsPartOf(singleID):
+            bc = c4d.GetCustomDataTypeDefault(c4d.DTYPE_STRING)
+            bc.SetInt32(c4d.DESC_ANIMATE, c4d.DESC_ANIMATE_OFF)
+            bc.SetBool(c4d.DESC_HIDE, True)
+            description.SetParameter(desc_id, bc, ID_TAG_JOINTS_GROUP)
+
+         desc_id = c4d.DescID(c4d.DescLevel(ID_TAG_T_POSE_MATRIX + idx*3, c4d.DTYPE_MATRIX, node.GetType()))
+         if singleID is None or desc_id.IsPartOf(singleID):
+            bc = c4d.GetCustomDataTypeDefault(c4d.DTYPE_MATRIX)
+            bc.SetInt32(c4d.DESC_ANIMATE, c4d.DESC_ANIMATE_OFF)
+            bc.SetBool(c4d.DESC_HIDE, True)
+            description.SetParameter(desc_id, bc, ID_TAG_JOINTS_GROUP)
+
+         desc_id = c4d.DescID(c4d.DescLevel(ID_TAG_T_POSE_MATRIX + idx*3 + 1, c4d.DTYPE_MATRIX, node.GetType()))
+         if singleID is None or desc_id.IsPartOf(singleID):
+            bc = c4d.GetCustomDataTypeDefault(c4d.DTYPE_MATRIX)
+            bc.SetInt32(c4d.DESC_ANIMATE, c4d.DESC_ANIMATE_OFF)
+            bc.SetBool(c4d.DESC_HIDE, True)
+            description.SetParameter(desc_id, bc, ID_TAG_JOINTS_GROUP)
+
+         desc_id = c4d.DescID(c4d.DescLevel(ID_TAG_T_POSE_MATRIX + idx*3 + 2, c4d.DTYPE_MATRIX, node.GetType()))
+         if singleID is None or desc_id.IsPartOf(singleID):
+            bc = c4d.GetCustomDataTypeDefault(c4d.DTYPE_MATRIX)
+            bc.SetInt32(c4d.DESC_ANIMATE, c4d.DESC_ANIMATE_OFF)
+            bc.SetBool(c4d.DESC_HIDE, True)
+            description.SetParameter(desc_id, bc, ID_TAG_JOINTS_GROUP)
 
       return True, flags | c4d.DESCFLAGS_DESC_LOADED
 
    def __searchHierarchy(self, obj, name):
+      if obj is None:
+         return None
+
       if obj.GetName() == name:
          return obj
 
@@ -157,26 +185,35 @@ class NeuronTagData(c4d.plugins.TagData):
       if id == ID_TAG_SCALE_ROOT_POSITION:
          return True, node.GetDataInstance().GetBool(ID_TAG_SCALE_ROOT_POSITION), c4d.DESCFLAGS_GET_PARAM_GET
 
-      idx = 0
-      for _ in NEURON_JOINTS:
-         if id == ID_TAG_CHARACTER_JOINTS + idx:
-            joint = node.GetDataInstance().GetData(ID_TAG_CHARACTER_JOINTS + idx)
+      for idx in range(len(NEURON_JOINTS)):
+         if id == ID_TAG_CHARACTER_JOINTS + idx*3:
+            joint = node.GetDataInstance().GetData(id)
             if joint is None:
                joint_name = node.GetDataInstance().GetData(ID_TAG_CHARACTER_JOINTS_NAME + idx)
                if joint_name is not None and node.GetObject() is not None:
                   joint = self.__searchHierarchy(node.GetObject(), joint_name)
                   if joint is not None:
-                     node.GetDataInstance().SetData(ID_TAG_CHARACTER_JOINTS + idx, joint)
+                     node.GetDataInstance().SetData(id, joint)
             return True, joint, c4d.DESCFLAGS_GET_PARAM_GET
-         idx += 1
 
-         if id == ID_TAG_CHARACTER_JOINTS + idx:
-            return True, node.GetDataInstance().GetBool(ID_TAG_CHARACTER_JOINTS + idx), c4d.DESCFLAGS_GET_PARAM_GET
-         idx += 1
+         if id == ID_TAG_CHARACTER_JOINTS + idx*3 + 1:
+            return True, node.GetDataInstance().GetBool(id), c4d.DESCFLAGS_GET_PARAM_GET
 
-         if id == ID_TAG_CHARACTER_JOINTS + idx:
-            return True, node.GetDataInstance().GetBool(ID_TAG_CHARACTER_JOINTS + idx), c4d.DESCFLAGS_GET_PARAM_GET
-         idx += 1
+         if id == ID_TAG_CHARACTER_JOINTS + idx*3 + 2:
+            return True, node.GetDataInstance().GetBool(id), c4d.DESCFLAGS_GET_PARAM_GET
+
+         if id == ID_TAG_CHARACTER_JOINTS_NAME + idx:
+            joint_name = node.GetDataInstance().GetData(id)
+            return True, joint_name, c4d.DESCFLAGS_GET_PARAM_GET
+
+         if id == ID_TAG_T_POSE_MATRIX + idx*3:
+            return True, node.GetDataInstance().GetData(id), c4d.DESCFLAGS_GET_PARAM_GET
+
+         if id == ID_TAG_T_POSE_MATRIX + idx*3 + 1:
+            return True, node.GetDataInstance().GetData(id), c4d.DESCFLAGS_GET_PARAM_GET
+
+         if id == ID_TAG_T_POSE_MATRIX + idx*3 + 2:
+            return True, node.GetDataInstance().GetData(id), c4d.DESCFLAGS_GET_PARAM_GET
 
       return False
 
@@ -191,28 +228,50 @@ class NeuronTagData(c4d.plugins.TagData):
          node.GetDataInstance().SetBool(ID_TAG_SCALE_ROOT_POSITION, t_data)
          return True, flags | c4d.DESCFLAGS_SET_PARAM_SET
 
-      idx = 0
-      for _ in NEURON_JOINTS:
+      for idx in range(len(NEURON_JOINTS)):
          if id == ID_TAG_CHARACTER_JOINTS + idx:
-            node.GetDataInstance().SetData(ID_TAG_CHARACTER_JOINTS + idx, t_data)
-            node.GetDataInstance().SetData(ID_TAG_CHARACTER_JOINTS_NAME + idx, t_data.GetName())
+            node.GetDataInstance().SetData(id, t_data)
+            node.GetDataInstance().RemoveData(ID_TAG_T_POSE_MATRIX + idx*3)
+            node.GetDataInstance().RemoveData(ID_TAG_T_POSE_MATRIX + idx*3 + 1)
+            node.GetDataInstance().RemoveData(ID_TAG_T_POSE_MATRIX + idx*3 + 2)
+            if t_data is not None:
+               node.GetDataInstance().SetData(ID_TAG_CHARACTER_JOINTS_NAME + idx, t_data.GetName())
+            else:
+               node.GetDataInstance().RemoveData(ID_TAG_CHARACTER_JOINTS_NAME + idx)
             return True, flags | c4d.DESCFLAGS_SET_PARAM_SET
-         idx += 1
 
-         if id == ID_TAG_CHARACTER_JOINTS + idx:
-            node.GetDataInstance().SetBool(ID_TAG_CHARACTER_JOINTS + idx, t_data)
+         if id == ID_TAG_CHARACTER_JOINTS + idx*3 + 1:
+            node.GetDataInstance().SetBool(id, t_data)
             return True, flags | c4d.DESCFLAGS_SET_PARAM_SET
-         idx += 1
 
-         if id == ID_TAG_CHARACTER_JOINTS + idx:
-            node.GetDataInstance().SetBool(ID_TAG_CHARACTER_JOINTS + idx, t_data)
+         if id == ID_TAG_CHARACTER_JOINTS + idx*3 + 2:
+            node.GetDataInstance().SetBool(id, t_data)
             return True, flags | c4d.DESCFLAGS_SET_PARAM_SET
-         idx += 1
+
+         if id == ID_TAG_CHARACTER_JOINTS_NAME + idx:
+            node.GetDataInstance().SetData(id, t_data)
+            if t_data is not None:
+               joint = self.__searchHierarchy(node.GetObject(), t_data)
+               if joint is not None:
+                  node.GetDataInstance().SetData(ID_TAG_CHARACTER_JOINTS + idx*3, joint)
+            return True, flags | c4d.DESCFLAGS_SET_PARAM_SET
+
+         if id == ID_TAG_T_POSE_MATRIX + idx*3:
+            node.GetDataInstance().SetData(id, t_data)
+            return True, flags | c4d.DESCFLAGS_SET_PARAM_SET
+
+         if id == ID_TAG_T_POSE_MATRIX + idx*3 + 1:
+            node.GetDataInstance().SetData(id, t_data)
+            return True, flags | c4d.DESCFLAGS_SET_PARAM_SET
+
+         if id == ID_TAG_T_POSE_MATRIX + idx*3 + 2:
+            node.GetDataInstance().SetData(id, t_data)
+            return True, flags | c4d.DESCFLAGS_SET_PARAM_SET
 
       return False
 
    def _setTPose(self, node):
-      for i in range(0, len(NEURON_JOINTS)):
+      for i in range(len(NEURON_JOINTS)):
          target_joint = node.GetDataInstance().GetData(ID_TAG_CHARACTER_JOINTS + i*3)
          if target_joint is not None:
             node.GetDataInstance().SetMatrix(ID_TAG_T_POSE_MATRIX + i*3, target_joint.GetMg())
@@ -220,7 +279,7 @@ class NeuronTagData(c4d.plugins.TagData):
             node.GetDataInstance().SetMatrix(ID_TAG_T_POSE_MATRIX + i*3 + 2, target_joint.GetMl())
 
    def _gotoTPose(self, node):
-      for i in range(0, len(NEURON_JOINTS)):
+      for i in range(len(NEURON_JOINTS)):
          target_joint = node.GetDataInstance().GetData(ID_TAG_CHARACTER_JOINTS + i*3)
          mg = node.GetDataInstance().GetData(ID_TAG_T_POSE_MATRIX + i*3)
          if target_joint is not None and mg is not None:
@@ -230,28 +289,28 @@ class NeuronTagData(c4d.plugins.TagData):
       if type(obj) is c4d.modules.character.CAJointObject:
          obj_name = obj.GetName()
 
-         idx = 0
-         for joint in NEURON_JOINTS:
-            if obj_name.endswith(joint):
-               node.GetDataInstance().SetData(ID_TAG_CHARACTER_JOINTS + idx, obj)
+         for idx in range(len(NEURON_JOINTS)):
+            if obj_name.endswith(NEURON_JOINTS[idx]):
+               node.GetDataInstance().SetData(ID_TAG_CHARACTER_JOINTS + idx*3, obj)
                node.GetDataInstance().SetData(ID_TAG_CHARACTER_JOINTS_NAME + idx, obj.GetName())
                break
-            idx += 3
 
       for child in obj.GetChildren():
          self.__detectJointsMap(node, child)
 
    def _detectJointsMap(self, node):
+      self._clearJointsMap(node)
       obj = node.GetObject()
       if obj is not None:
          self.__detectJointsMap(node, obj)
 
    def _clearJointsMap(self, node):
-      idx = 0
-      for joint in NEURON_JOINTS:
-         node.GetDataInstance().RemoveData(ID_TAG_CHARACTER_JOINTS + idx)
-         node.GetDataInstance().RemoveData(ID_TAG_T_POSE_MATRIX + idx)
-         idx += 3
+      for idx in range(len(NEURON_JOINTS)):
+         node.GetDataInstance().RemoveData(ID_TAG_CHARACTER_JOINTS + idx*3)
+         node.GetDataInstance().RemoveData(ID_TAG_T_POSE_MATRIX + idx*3)
+         node.GetDataInstance().RemoveData(ID_TAG_T_POSE_MATRIX + idx*3 + 1)
+         node.GetDataInstance().RemoveData(ID_TAG_T_POSE_MATRIX + idx*3 + 2)
+         node.GetDataInstance().RemoveData(ID_TAG_CHARACTER_JOINTS_NAME + idx)
 
    def Message(self, node, type, data):
       if type==c4d.MSG_DESCRIPTION_COMMAND:
@@ -301,7 +360,7 @@ class NeuronTagData(c4d.plugins.TagData):
          if scale_factor is not None:
             hip_scale = scale_factor
 
-      for i in range(0, len(NEURON_JOINTS)):
+      for i in range(len(NEURON_JOINTS)):
          joint_name = NEURON_JOINTS[i]
          joint = avatar.get_joint_by_name(joint_name)
          if joint is None:
@@ -319,14 +378,20 @@ class NeuronTagData(c4d.plugins.TagData):
          target_ml = tag.GetDataInstance().GetData(ID_TAG_T_POSE_MATRIX + i*3 + 2)
 
          if target_joint is not None and target_mg is not None:
+            if target_up_mg is None:
+               target_up_mg = c4d.Matrix()
+
+            if target_ml is None:
+               target_ml = c4d.Matrix(target_mg)
+
             if r_enable:
                ml = target_ml * (~target_mg) * src_ml * target_mg
                target_joint.SetAbsRot(c4d.utils.MatrixToHPB(ml, target_joint.GetRotationOrder()))
             if p_enable:
                target_mg.off = c4d.Vector(0, 0, 0)
-               target_up_mg.off = c4d.Vector(0, 0, 0)
                p = joint.get_local_position()
                if p is not None:
+                  target_up_mg.off = c4d.Vector(0, 0, 0)
                   src_pl = (~target_up_mg) * c4d.Vector(p[0], p[1], p[2])
                   src_pl[2] = -src_pl[2]
                   if joint_name == "Hips":
@@ -336,7 +401,7 @@ class NeuronTagData(c4d.plugins.TagData):
                   target_joint.SetAbsPos(target_ml.off)
 
    def __recordKey(self, tag, t):
-      for joint_index in range(0, len(NEURON_JOINTS)):
+      for joint_index in range(len(NEURON_JOINTS)):
          target_joint = tag.GetDataInstance().GetData(ID_TAG_CHARACTER_JOINTS + joint_index*3)
          if target_joint is None:
             continue
